@@ -1,0 +1,14 @@
+{
+  "name": "lunchlockerblesystem",
+  "version": "1.0.0",
+  "description": "the server equivelent of our lunch locker application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Aiden Lambert",
+  "license": "ISC",
+  "dependencies": {
+    "bleno": "npm:@abandonware/bleno@^0.5.1-3"
+  }
+}
