@@ -22,7 +22,7 @@ console.log('on -> stateChange: ' + state);
 var CustomCharacteristics = require('./characteristics');
 
 bleno.on('advertisingStart', function(error) {
-	console.log('on -> advertisingStart: ' + (error ? 'error ' + error : 'success'));
+	console.log('on -> advertisingStart: ' + (error ? 'error ' + error : 'success')+'\n');
 
 	if (!error) {
 		bleno.setServices([
