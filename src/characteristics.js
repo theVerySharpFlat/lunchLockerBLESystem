@@ -22,7 +22,7 @@ var SafeLockCharacteristic = function () {
   this._updateValueCallback = null;
 
   this.status = function () {
-	var value = fs.readFileSync(`${statFile}`);
+	var value = fs.readFileSync(`${rootDir}/${statFile}`);
 	if(value != '00' & value != '01'){
 		console.error(`invalid value inside safe.status file! check contents. The value recieved was \'${value}\'`);
 	}
@@ -32,13 +32,13 @@ var SafeLockCharacteristic = function () {
   this.lock = function () {
     //TODO: write code that locks the safe
 	console.log("request to lock the safe recieved!");
-	console.log(execSync(`./${lockFile} ${rootDir}/${statFile}`).toString());
+	console.log(execSync(`${rootDir}/${lockFile} ${rootDir}/${statFile}`).toString());
   };
 
   this.unLock = function () {
     //TODO: write code that unlocks the safe
 	console.log("request to unlock the safe recieved!");
-	console.log(execSync(`./${unLockFile} ${rootDir}/${statFile}`).toString());
+	console.log(execSync(`${rootDir}/${unLockFile} ${rootDir}/${statFile}`).toString());
   };
 };
 SafeLockCharacteristic.prototype.onReadRequest = function (offset, callback) {
