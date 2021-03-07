@@ -5,7 +5,9 @@
  *  Aiden Lambert 3/5/21
  */
 
-var bleno = require('bleno') ; 
+var bleno = require('bleno') ;
+var {execSync} = require('child_process');
+
 var BlenoPrimaryService = bleno.PrimaryService;
 
 bleno.on('stateChange', function(state) {

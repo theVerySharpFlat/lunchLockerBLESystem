@@ -4,9 +4,11 @@ var fs = require("fs");
 var {execSync} = require("child_process");
 var BlenoCharacteristic = bleno.Characteristic;
 
-const statFile = "safe.status";
-const unLockFile = "safe.unlock.sh";
-const lockFile = "safe.lock.sh";
+const rootDir = `${__dirname.substring(0, __dirname.indexOf("lunchLockerBLESystem")+"lunchLockerBLESystem".length)}`;
+console.log(`root dir: ${rootDir}`)
+const statFile = "data/safe.status";
+const unLockFile = "src/safe.unlock.sh";
+const lockFile = "src/safe.lock.sh";
 
 var SafeLockCharacteristic = function () {
   //this is the characteristic that is in charge of the safe's lock mechanism
@@ -20,7 +22,7 @@ var SafeLockCharacteristic = function () {
   this._updateValueCallback = null;
 
   this.status = function () {
-	var value = fs.readFileSync(statFile);
+	var value = fs.readFileSync(`${statFile}`);
 	if(value != '00' & value != '01'){
 		console.error(`invalid value inside safe.status file! check contents. The value recieved was \'${value}\'`);
 	}
@@ -30,13 +32,13 @@ var SafeLockCharacteristic = function () {
   this.lock = function () {
     //TODO: write code that locks the safe
 	console.log("request to lock the safe recieved!");
-	console.log(execSync(`./${lockFile}`).toString());
+	console.log(execSync(`./${lockFile} ${rootDir}/${statFile}`).toString());
   };
 
   this.unLock = function () {
     //TODO: write code that unlocks the safe
 	console.log("request to unlock the safe recieved!");
-	console.log(execSync(`./${unLockFile}`).toString());
+	console.log(execSync(`./${unLockFile} ${rootDir}/${statFile}`).toString());
   };
 };
 SafeLockCharacteristic.prototype.onReadRequest = function (offset, callback) {
