@@ -43,14 +43,19 @@ var SafeLockCharacteristic = function () {
 };
 SafeLockCharacteristic.prototype.onReadRequest = function (offset, callback) {
   //this function should get and send the status of the lock  
-  var message = this.status();
+  if(authed){
+    var message = this.status();
 
-  console.log("read request recieved!");
-  console.log(`sending status of ${message}`);
-  console.log('');
-  var data = Buffer.alloc(1);
-  data.writeUInt8(parseInt(message), 0);
-  callback(this.RESULT_SUCCESS, data ); 
+    console.log("read request recieved!");
+    console.log(`sending status of ${message}`);
+    console.log('');
+    var data = Buffer.alloc(1);
+    data.writeUInt8(parseInt(message), 0);
+    callback(this.RESULT_SUCCESS, data ); 
+  }
+  else{
+    callback(this.RESULT_UNLIKELY_ERROR);
+  }
 };
 
 SafeLockCharacteristic.prototype.onWriteRequest = function (
@@ -60,15 +65,20 @@ SafeLockCharacteristic.prototype.onWriteRequest = function (
   callback
 ) {
   //TODO: run lock/unlock process and report result
-  
-  var dataString = data.toString('hex');
-  if(dataString == '00') 
-  	this.lock();
-  else if (dataString == '01') 
-  	this.unLock();
-  else 
-  	console.log("invalid write!");
-  callback(this.RESULT_SUCCESS);
+
+  if(authed){
+    var dataString = data.toString('hex');
+    if(dataString == '00') 
+      this.lock();
+    else if (dataString == '01') 
+      this.unLock();
+    else 
+      console.log("invalid write!");
+    callback(this.RESULT_SUCCESS);
+  }else {
+    callback(this.RESULT_UNLIKELY_ERROR);
+  }
+
 };
 
 SafeLockCharacteristic.prototype.onSubscribe = function (
@@ -84,4 +94,38 @@ SafeLockCharacteristic.prototype.onUnsubscribe = function () {
   console.log("subscription disconnected");
 };
 util.inherits(SafeLockCharacteristic, BlenoCharacteristic); //crude old javascript version of the 'extends' keyword
-module.exports = { SafeLockCharacteristic }; //crude old javascript version of the 'export' keyword
+
+var authed = false;
+
+
+var SafeAuthCharacteristic = function() {
+  SafeAuthCharacteristic.super_.call(this, {
+    uuid: "1e4bed6d-dca4-4f95-8662-feb4d735f10c",
+    properties: ["read", "write", "notify"],
+  });
+}
+const { v4: uuidv4, parse: parseuUuid } = require('uuid');
+SafeAuthCharacteristic.prototype.onReadRequest = function(offset, callback) {
+  var usersData = JSON.parse(fs.readFileSync(`${rootDir}/data/users.json`));
+  var generatedUUID = uuidv4();
+  usersData.users.push(generatedUUID.replace(/-/g,""));
+  console.log(`after we try to remove hyphens: ${generatedUUID.replace(/-/g,"")}`);
+  fs.writeFileSync(`${rootDir}/data/users.json`, JSON.stringify(usersData));
+  callback(this.RESULT_SUCCESS, parseuUuid(generatedUUID));
+}
+SafeAuthCharacteristic.prototype.onWriteRequest = function(data, offset, withoutResponse, callback) {
+  console.log(`in SafeAuthCharacteristic.prototype.onWriteRequest the data that we got is ${data.toString('hex')}`);
+  if(JSON.parse(fs.readFileSync(`${rootDir}/data/users.json`)).users.includes(data.toString('hex'))){
+    console.log("ACCESS GRANTED");
+    authed = true;
+  }else{
+    console.log("ACCESS DENIED");
+    authed = false;
+  }
+  callback(this.RESULT_SUCCESS);
+}
+var setAuthed = function(val) {
+  authed = val;
+}
+util.inherits(SafeAuthCharacteristic, BlenoCharacteristic);
+module.exports = { SafeLockCharacteristic, SafeAuthCharacteristic, authed, setAuthed}; //crude old javascript version of the 'export' keyword

@@ -31,9 +31,28 @@ bleno.on('advertisingStart', function(error) {
 			new BlenoPrimaryService({
 				uuid: '27cf08c1-076a-41af-becd-02ed6f6109b9',
 				characteristics: [
+					new CustomCharacteristics.SafeAuthCharacteristic(),
 					new CustomCharacteristics.SafeLockCharacteristic()
 				]
 			})
-		]);
+		], error => console.log(error ? `error setting services ${error}`: ''));
 	}
 });
+
+bleno.on("accept", addr => {
+	CustomCharacteristics.setAuthed(false);
+	console.log(`connected to ${addr}\n`);
+});
+
+bleno.on("disconnect", addr => {
+	CustomCharacteristics.setAuthed(false);
+	console.log(`disconnected from ${addr}`);
+});
+
+bleno.on('servicesSetError', err=>{
+	console.log(`error setting services `)
+});
+bleno.on('servicesSet', state =>{
+	console.log(`services set state: ${state}`)
+}
+);
